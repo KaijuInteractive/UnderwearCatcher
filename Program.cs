@@ -65,6 +65,14 @@ class Program
 
 
         // ============================================================
+        // GAME STATE
+        // ============================================================
+
+        bool titleScreen = true;
+        bool gameOver = false;
+
+
+        // ============================================================
         // PLAYER
         // ============================================================
 
@@ -115,11 +123,10 @@ class Program
         // ============================================================
 
         int score = 0;
+        int highScore = 0;
+
         int misses = 0;
-
         const int maxMisses = 3;
-
-        bool gameOver = false;
 
 
         // ============================================================
@@ -132,10 +139,51 @@ class Program
 
 
             // ========================================================
-            // ACTIVE GAME
-            // ============================================================
+            // TITLE SCREEN INPUT
+            // ========================================================
 
-            if (!gameOver)
+            if (titleScreen)
+            {
+                if (Raylib.IsKeyPressed(KeyboardKey.Enter))
+                {
+                    titleScreen = false;
+                    gameOver = false;
+
+                    score = 0;
+                    misses = 0;
+
+                    gameTime = 0.0f;
+                    briefsSpeed = startingBriefsSpeed;
+
+                    wearingBriefs = false;
+
+                    catcherPosition = new Vector2(
+                        screenWidth / 2.0f -
+                        (catcherNaked.Width * catcherScale) / 2.0f,
+
+                        screenHeight -
+                        (catcherNaked.Height * catcherScale) -
+                        35
+                    );
+
+                    briefsPosition.X =
+                        Raylib.GetRandomValue(
+                            40,
+                            screenWidth -
+                            (int)(briefs.Width * briefsScale) -
+                            40
+                        );
+
+                    briefsPosition.Y = -100;
+                }
+            }
+
+
+            // ========================================================
+            // ACTIVE GAME
+            // ========================================================
+
+            if (!titleScreen && !gameOver)
             {
                 // ====================================================
                 // TIMER
@@ -239,20 +287,10 @@ class Program
                 {
                     score++;
 
-
-                    // -----------------------------------------------
-                    // FIRST CATCH
-                    // -----------------------------------------------
-
                     if (!wearingBriefs)
                     {
                         wearingBriefs = true;
                     }
-
-
-                    // -----------------------------------------------
-                    // RESET FALLING BRIEFS
-                    // -----------------------------------------------
 
                     briefsPosition.X =
                         Raylib.GetRandomValue(
@@ -274,14 +312,14 @@ class Program
                 {
                     misses++;
 
-
-                    // -----------------------------------------------
-                    // GAME OVER?
-                    // -----------------------------------------------
-
                     if (misses >= maxMisses)
                     {
                         gameOver = true;
+
+                        if (score > highScore)
+                        {
+                            highScore = score;
+                        }
                     }
                     else
                     {
@@ -305,28 +343,17 @@ class Program
 
             if (gameOver)
             {
+                // R = restart immediately
                 if (Raylib.IsKeyPressed(KeyboardKey.R))
                 {
-                    // -----------------------------------------------
-                    // RESET GAME DATA
-                    // -----------------------------------------------
-
                     score = 0;
                     misses = 0;
 
                     gameTime = 0.0f;
-
-                    briefsSpeed =
-                        startingBriefsSpeed;
+                    briefsSpeed = startingBriefsSpeed;
 
                     wearingBriefs = false;
-
                     gameOver = false;
-
-
-                    // -----------------------------------------------
-                    // RESET PLAYER
-                    // -----------------------------------------------
 
                     catcherPosition = new Vector2(
                         screenWidth / 2.0f -
@@ -337,11 +364,6 @@ class Program
                         35
                     );
 
-
-                    // -----------------------------------------------
-                    // RESET FALLING BRIEFS
-                    // -----------------------------------------------
-
                     briefsPosition.X =
                         Raylib.GetRandomValue(
                             40,
@@ -351,6 +373,14 @@ class Program
                         );
 
                     briefsPosition.Y = -100;
+                }
+
+
+                // ENTER = return to title
+                if (Raylib.IsKeyPressed(KeyboardKey.Enter))
+                {
+                    gameOver = false;
+                    titleScreen = true;
                 }
             }
 
@@ -379,72 +409,266 @@ class Program
 
 
             // ========================================================
-            // TITLE
+            // TITLE SCREEN
             // ========================================================
 
-            Raylib.DrawText(
-                "UNDERWEAR CATCHER",
-                220,
-                25,
-                32,
-                Color.SkyBlue
-            );
+            if (titleScreen)
+            {
+                // ----------------------------------------------------
+                // STREWN BRIEFS
+                // ----------------------------------------------------
 
-
-            // ========================================================
-            // SCORE
-            // ========================================================
-
-            Raylib.DrawText(
-                $"SCORE: {score}",
-                30,
-                75,
-                22,
-                Color.White
-            );
-
-
-            // ========================================================
-            // SPEED
-            // ========================================================
-
-            string speedText =
-                $"SPEED: {speedPercent}%";
-
-            int speedTextWidth =
-                Raylib.MeasureText(
-                    speedText,
-                    20
+                Raylib.DrawTextureEx(
+                    briefs,
+                    new Vector2(70, 80),
+                    -18.0f,
+                    1.5f,
+                    Color.White
                 );
 
-            Raylib.DrawText(
-                speedText,
-                (screenWidth - speedTextWidth) / 2,
-                77,
-                20,
-                Color.Yellow
-            );
+                Raylib.DrawTextureEx(
+                    briefs,
+                    new Vector2(625, 75),
+                    20.0f,
+                    1.4f,
+                    Color.White
+                );
+
+                Raylib.DrawTextureEx(
+                    briefs,
+                    new Vector2(100, 405),
+                    15.0f,
+                    1.2f,
+                    Color.White
+                );
+
+                Raylib.DrawTextureEx(
+                    briefs,
+                    new Vector2(640, 410),
+                    -15.0f,
+                    1.3f,
+                    Color.White
+                );
+
+                Raylib.DrawTextureEx(
+                    briefs,
+                    new Vector2(185, 230),
+                    -28.0f,
+                    0.9f,
+                    Color.White
+                );
+
+                Raylib.DrawTextureEx(
+                    briefs,
+                    new Vector2(565, 245),
+                    25.0f,
+                    0.9f,
+                    Color.White
+                );
+
+
+                // ----------------------------------------------------
+                // TITLE
+                // ----------------------------------------------------
+
+                string titleText =
+                    "UNDERWEAR CATCHER";
+
+                int titleWidth =
+                    Raylib.MeasureText(
+                        titleText,
+                        42
+                    );
+
+                Raylib.DrawText(
+                    titleText,
+                    (screenWidth - titleWidth) / 2,
+                    80,
+                    42,
+                    Color.SkyBlue
+                );
+
+
+                // ----------------------------------------------------
+                // TAGLINE
+                // ----------------------------------------------------
+
+                string tagline =
+                    "CATCH 'EM BEFORE THEY DROP!";
+
+                int taglineWidth =
+                    Raylib.MeasureText(
+                        tagline,
+                        18
+                    );
+
+                Raylib.DrawText(
+                    tagline,
+                    (screenWidth - taglineWidth) / 2,
+                    140,
+                    18,
+                    Color.Pink
+                );
+
+
+                // ----------------------------------------------------
+                // CAUGHT TORSO
+                // ----------------------------------------------------
+
+                const float titleTorsoScale = 2.5f;
+
+                Vector2 titleTorsoPosition =
+                    new Vector2(
+                        screenWidth / 2.0f -
+                        (catcherCaught.Width *
+                        titleTorsoScale) / 2.0f,
+
+                        195
+                    );
+
+                Raylib.DrawTextureEx(
+                    catcherCaught,
+                    titleTorsoPosition,
+                    0.0f,
+                    titleTorsoScale,
+                    Color.White
+                );
+
+
+                // ----------------------------------------------------
+                // HIGH SCORE
+                // ----------------------------------------------------
+
+                string highScoreText =
+                    $"HIGH SCORE: {highScore}";
+
+                int highScoreWidth =
+                    Raylib.MeasureText(
+                        highScoreText,
+                        24
+                    );
+
+                Raylib.DrawText(
+                    highScoreText,
+                    (screenWidth - highScoreWidth) / 2,
+                    355,
+                    24,
+                    Color.Yellow
+                );
+
+
+                // ----------------------------------------------------
+                // START
+                // ----------------------------------------------------
+
+                string startText =
+                    "PRESS ENTER TO PLAY";
+
+                int startWidth =
+                    Raylib.MeasureText(
+                        startText,
+                        26
+                    );
+
+                Raylib.DrawText(
+                    startText,
+                    (screenWidth - startWidth) / 2,
+                    440,
+                    26,
+                    Color.White
+                );
+
+
+                // ----------------------------------------------------
+                // RULES
+                // ----------------------------------------------------
+
+                string ruleText =
+                    "3 MISSES = GAME OVER";
+
+                int ruleWidth =
+                    Raylib.MeasureText(
+                        ruleText,
+                        18
+                    );
+
+                Raylib.DrawText(
+                    ruleText,
+                    (screenWidth - ruleWidth) / 2,
+                    495,
+                    18,
+                    Color.Gray
+                );
+            }
 
 
             // ========================================================
-            // MISSES
+            // GAMEPLAY
             // ========================================================
 
-            Raylib.DrawText(
-                $"MISSES: {misses}/{maxMisses}",
-                620,
-                75,
-                22,
-                Color.White
-            );
-
-
-            // ========================================================
-            // ACTIVE GAME DRAWING
-            // ========================================================
-
-            if (!gameOver)
+            if (!titleScreen && !gameOver)
             {
+                // ====================================================
+                // TITLE
+                // ====================================================
+
+                Raylib.DrawText(
+                    "UNDERWEAR CATCHER",
+                    220,
+                    25,
+                    32,
+                    Color.SkyBlue
+                );
+
+
+                // ====================================================
+                // SCORE
+                // ====================================================
+
+                Raylib.DrawText(
+                    $"SCORE: {score}",
+                    30,
+                    75,
+                    22,
+                    Color.White
+                );
+
+
+                // ====================================================
+                // SPEED
+                // ====================================================
+
+                string speedText =
+                    $"SPEED: {speedPercent}%";
+
+                int speedTextWidth =
+                    Raylib.MeasureText(
+                        speedText,
+                        20
+                    );
+
+                Raylib.DrawText(
+                    speedText,
+                    (screenWidth - speedTextWidth) / 2,
+                    77,
+                    20,
+                    Color.Yellow
+                );
+
+
+                // ====================================================
+                // MISSES
+                // ====================================================
+
+                Raylib.DrawText(
+                    $"MISSES: {misses}/{maxMisses}",
+                    620,
+                    75,
+                    22,
+                    Color.White
+                );
+
+
                 // ====================================================
                 // FALLING BRIEFS
                 // ====================================================
@@ -530,6 +754,54 @@ class Program
 
             if (gameOver)
             {
+                // Keep HUD visible.
+
+                Raylib.DrawText(
+                    "UNDERWEAR CATCHER",
+                    220,
+                    25,
+                    32,
+                    Color.SkyBlue
+                );
+
+                Raylib.DrawText(
+                    $"SCORE: {score}",
+                    30,
+                    75,
+                    22,
+                    Color.White
+                );
+
+                string speedText =
+                    $"SPEED: {speedPercent}%";
+
+                int speedTextWidth =
+                    Raylib.MeasureText(
+                        speedText,
+                        20
+                    );
+
+                Raylib.DrawText(
+                    speedText,
+                    (screenWidth - speedTextWidth) / 2,
+                    77,
+                    20,
+                    Color.Yellow
+                );
+
+                Raylib.DrawText(
+                    $"MISSES: {misses}/{maxMisses}",
+                    620,
+                    75,
+                    22,
+                    Color.White
+                );
+
+
+                // ----------------------------------------------------
+                // GAME OVER
+                // ----------------------------------------------------
+
                 string gameOverText =
                     "GAME OVER";
 
@@ -542,7 +814,7 @@ class Program
                 Raylib.DrawText(
                     gameOverText,
                     (screenWidth - gameOverWidth) / 2,
-                    210,
+                    190,
                     50,
                     Color.Pink
                 );
@@ -564,9 +836,31 @@ class Program
                 Raylib.DrawText(
                     finalScoreText,
                     (screenWidth - finalScoreWidth) / 2,
-                    285,
+                    265,
                     30,
                     Color.White
+                );
+
+
+                // ----------------------------------------------------
+                // HIGH SCORE
+                // ----------------------------------------------------
+
+                string highScoreText =
+                    $"HIGH SCORE: {highScore}";
+
+                int highScoreWidth =
+                    Raylib.MeasureText(
+                        highScoreText,
+                        24
+                    );
+
+                Raylib.DrawText(
+                    highScoreText,
+                    (screenWidth - highScoreWidth) / 2,
+                    315,
+                    24,
+                    Color.Yellow
                 );
 
 
@@ -586,7 +880,7 @@ class Program
                 Raylib.DrawText(
                     finalSpeedText,
                     (screenWidth - finalSpeedWidth) / 2,
-                    335,
+                    360,
                     20,
                     Color.Yellow
                 );
@@ -608,9 +902,31 @@ class Program
                 Raylib.DrawText(
                     restartText,
                     (screenWidth - restartWidth) / 2,
-                    410,
+                    430,
                     22,
                     Color.SkyBlue
+                );
+
+
+                // ----------------------------------------------------
+                // TITLE RETURN
+                // ----------------------------------------------------
+
+                string titleReturnText =
+                    "PRESS ENTER FOR TITLE";
+
+                int titleReturnWidth =
+                    Raylib.MeasureText(
+                        titleReturnText,
+                        18
+                    );
+
+                Raylib.DrawText(
+                    titleReturnText,
+                    (screenWidth - titleReturnWidth) / 2,
+                    475,
+                    18,
+                    Color.Gray
                 );
             }
 
