@@ -1,5 +1,6 @@
 ﻿using Raylib_cs;
 using System;
+using System.IO;
 using System.Numerics;
 
 class Program
@@ -73,6 +74,27 @@ class Program
 
 
         // ============================================================
+        // HIGH SCORE SAVE
+        // ============================================================
+
+        string saveFile = "highscore.txt";
+
+        int highScore = 0;
+
+        // Try to load an existing high score.
+        if (File.Exists(saveFile))
+        {
+            string savedText =
+                File.ReadAllText(saveFile);
+
+            if (int.TryParse(savedText, out int savedScore))
+            {
+                highScore = savedScore;
+            }
+        }
+
+
+        // ============================================================
         // PLAYER
         // ============================================================
 
@@ -123,7 +145,6 @@ class Program
         // ============================================================
 
         int score = 0;
-        int highScore = 0;
 
         int misses = 0;
         const int maxMisses = 3;
@@ -287,11 +308,27 @@ class Program
                 {
                     score++;
 
+
+                    // Update high score immediately.
+                    if (score > highScore)
+                    {
+                        highScore = score;
+
+                        File.WriteAllText(
+                            saveFile,
+                            highScore.ToString()
+                        );
+                    }
+
+
+                    // First successful catch puts the briefs on.
                     if (!wearingBriefs)
                     {
                         wearingBriefs = true;
                     }
 
+
+                    // Reset falling briefs.
                     briefsPosition.X =
                         Raylib.GetRandomValue(
                             40,
@@ -315,11 +352,6 @@ class Program
                     if (misses >= maxMisses)
                     {
                         gameOver = true;
-
-                        if (score > highScore)
-                        {
-                            highScore = score;
-                        }
                     }
                     else
                     {
@@ -343,7 +375,7 @@ class Program
 
             if (gameOver)
             {
-                // R = restart immediately
+                // R = restart immediately.
                 if (Raylib.IsKeyPressed(KeyboardKey.R))
                 {
                     score = 0;
@@ -376,7 +408,7 @@ class Program
                 }
 
 
-                // ENTER = return to title
+                // ENTER = return to title.
                 if (Raylib.IsKeyPressed(KeyboardKey.Enter))
                 {
                     gameOver = false;
@@ -398,6 +430,29 @@ class Program
 
 
             // ========================================================
+            // TITLE PULSE
+            // ========================================================
+
+            // Produces a smooth value between 0 and 1.
+            float pulse =
+                (MathF.Sin(
+                    (float)Raylib.GetTime() * 3.0f
+                ) + 1.0f) / 2.0f;
+
+            // Keep it visible even at the dimmest point.
+            byte pulseAlpha =
+                (byte)(120 + pulse * 135);
+
+            Color pulseColor =
+                new Color(
+                    255,
+                    255,
+                    255,
+                    pulseAlpha
+                );
+
+
+            // ========================================================
             // DRAW
             // ========================================================
 
@@ -414,10 +469,6 @@ class Program
 
             if (titleScreen)
             {
-                // ----------------------------------------------------
-                // STREWN BRIEFS
-                // ----------------------------------------------------
-
                 // ----------------------------------------------------
                 // STREWN BRIEFS
                 // Deliberately messy and asymmetrical.
@@ -478,6 +529,7 @@ class Program
                     0.55f,
                     Color.White
                 );
+
 
                 // ----------------------------------------------------
                 // TITLE
@@ -570,7 +622,7 @@ class Program
 
 
                 // ----------------------------------------------------
-                // START
+                // START - PULSING
                 // ----------------------------------------------------
 
                 string startText =
@@ -587,7 +639,7 @@ class Program
                     (screenWidth - startWidth) / 2,
                     440,
                     26,
-                    Color.White
+                    pulseColor
                 );
 
 
@@ -766,7 +818,9 @@ class Program
 
             if (gameOver)
             {
-                // Keep HUD visible.
+                // ----------------------------------------------------
+                // HUD
+                // ----------------------------------------------------
 
                 Raylib.DrawText(
                     "UNDERWEAR CATCHER",
