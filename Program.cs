@@ -1,202 +1,388 @@
-﻿using System;
-using System.Threading;
+﻿using Raylib_cs;
+using System.Numerics;
 
 class Program
 {
     static void Main()
     {
-        const int width = 50;
-        const int height = 22;
+        // ============================================================
+        // WINDOW
+        // ============================================================
 
-        // ============================================
-        // PLAYER / CATCHER
-        // ============================================
+        const int screenWidth = 800;
+        const int screenHeight = 600;
 
-        int playerX = width / 2;
-        const int playerWidth = 7;
-        const int playerSpeed = 1;
+        Raylib.InitWindow(
+            screenWidth,
+            screenHeight,
+            "Underwear Catcher"
+        );
 
-        // ============================================
-        // FALLING UNDERWEAR
-        // ============================================
+        Raylib.SetTargetFPS(60);
 
-        int underwearX = Random.Shared.Next(2, width - 8);
-        int underwearY = 3;
 
-        // ============================================
-        // SCORE
-        // ============================================
+        // ============================================================
+        // LOAD TEXTURES
+        // ============================================================
+
+        Texture2D catcherNaked =
+            Raylib.LoadTexture("Assets/Catcher.png");
+
+        Texture2D catcherCaught =
+            Raylib.LoadTexture("Assets/Briefs_Caught.png");
+
+        Texture2D briefs =
+            Raylib.LoadTexture("Assets/Briefs_Catch.png");
+
+
+        // ============================================================
+        // PIXEL ART FILTERING
+        // ============================================================
+
+        Raylib.SetTextureFilter(
+            catcherNaked,
+            TextureFilter.Point
+        );
+
+        Raylib.SetTextureFilter(
+            catcherCaught,
+            TextureFilter.Point
+        );
+
+        Raylib.SetTextureFilter(
+            briefs,
+            TextureFilter.Point
+        );
+
+
+        // ============================================================
+        // SCALE
+        // ============================================================
+
+        const float catcherScale = 3.0f;
+        const float briefsScale = 3.0f;
+
+
+        // ============================================================
+        // PLAYER
+        // ============================================================
+
+        Vector2 catcherPosition = new Vector2(
+            screenWidth / 2.0f -
+            (catcherNaked.Width * catcherScale) / 2.0f,
+
+            screenHeight -
+            (catcherNaked.Height * catcherScale) -
+            35
+        );
+
+        float catcherSpeed = 500.0f;
+
+        bool wearingBriefs = false;
+
+
+        // ============================================================
+        // FALLING BRIEFS
+        // ============================================================
+
+        Vector2 briefsPosition = new Vector2(
+            Raylib.GetRandomValue(40, 700),
+            -100
+        );
+
+        float briefsSpeed = 180.0f;
+
+
+        // ============================================================
+        // GAME DATA
+        // ============================================================
 
         int score = 0;
         int misses = 0;
 
-        Console.CursorVisible = false;
 
-        // ============================================
+        // ============================================================
         // GAME LOOP
-        // ============================================
+        // ============================================================
 
-        while (true)
+        while (!Raylib.WindowShouldClose())
         {
-            // ========================================
-            // INPUT
-            // ========================================
+            float deltaTime = Raylib.GetFrameTime();
 
-            int direction = 0;
 
-            // Drain the keyboard buffer.
-            // The newest direction pressed wins.
-            while (Console.KeyAvailable)
+            // ========================================================
+            // PLAYER MOVEMENT
+            // ========================================================
+
+            if (Raylib.IsKeyDown(KeyboardKey.Left) ||
+                Raylib.IsKeyDown(KeyboardKey.A))
             {
-                ConsoleKey key = Console.ReadKey(true).Key;
-
-                if (key == ConsoleKey.LeftArrow)
-                {
-                    direction = -1;
-                }
-
-                if (key == ConsoleKey.RightArrow)
-                {
-                    direction = 1;
-                }
-
-                if (key == ConsoleKey.Escape)
-                {
-                    Console.CursorVisible = true;
-                    return;
-                }
+                catcherPosition.X -= catcherSpeed * deltaTime;
             }
 
-            playerX += direction * playerSpeed;
-
-            // Keep catcher inside the screen
-            playerX = Math.Clamp(
-                playerX,
-                0,
-                width - playerWidth
-            );
-
-            // ========================================
-            // UPDATE UNDERWEAR
-            // ========================================
-
-            underwearY++;
-
-            // Has the underwear reached the catcher?
-            if (underwearY >= height - 5)
+            if (Raylib.IsKeyDown(KeyboardKey.Right) ||
+                Raylib.IsKeyDown(KeyboardKey.D))
             {
-                bool caught =
-                    underwearX + 6 >= playerX &&
-                    underwearX <= playerX + playerWidth - 1;
-
-                if (caught)
-                {
-                    score++;
-                }
-                else
-                {
-                    misses++;
-                }
-
-                // Spawn another pair
-                underwearX = Random.Shared.Next(2, width - 8);
-                underwearY = 3;
+                catcherPosition.X += catcherSpeed * deltaTime;
             }
 
-            // ========================================
+
+            // ========================================================
+            // PLAYER SCREEN BOUNDARIES
+            // ========================================================
+
+            float catcherWidth =
+                catcherNaked.Width * catcherScale;
+
+            if (catcherPosition.X < 0)
+            {
+                catcherPosition.X = 0;
+            }
+
+            if (catcherPosition.X + catcherWidth > screenWidth)
+            {
+                catcherPosition.X =
+                    screenWidth - catcherWidth;
+            }
+
+
+            // ========================================================
+            // MOVE FALLING BRIEFS
+            // ========================================================
+
+            briefsPosition.Y +=
+                briefsSpeed * deltaTime;
+
+
+            // ========================================================
+            // COLLISION RECTANGLES
+            // ============================================================
+
+            Rectangle catcherRectangle =
+                new Rectangle(
+                    catcherPosition.X,
+                    catcherPosition.Y,
+                    catcherNaked.Width * catcherScale,
+                    catcherNaked.Height * catcherScale
+                );
+
+            Rectangle briefsRectangle =
+                new Rectangle(
+                    briefsPosition.X,
+                    briefsPosition.Y,
+                    briefs.Width * briefsScale,
+                    briefs.Height * briefsScale
+                );
+
+
+            // ========================================================
+            // CATCH!
+            // ============================================================
+
+            if (Raylib.CheckCollisionRecs(
+                catcherRectangle,
+                briefsRectangle))
+            {
+                score++;
+
+                // --------------------------------------------
+                // FIRST CATCH
+                // --------------------------------------------
+
+                if (!wearingBriefs)
+                {
+                    wearingBriefs = true;
+                }
+
+
+                // --------------------------------------------
+                // RESET FALLING BRIEFS
+                // --------------------------------------------
+
+                briefsPosition.X =
+                    Raylib.GetRandomValue(
+                        40,
+                        screenWidth -
+                        (int)(briefs.Width * briefsScale) -
+                        40
+                    );
+
+                briefsPosition.Y = -100;
+
+
+                // --------------------------------------------
+                // SPEED UP SLIGHTLY
+                // --------------------------------------------
+
+                briefsSpeed += 8.0f;
+            }
+
+
+            // ========================================================
+            // MISS
+            // ============================================================
+
+            if (briefsPosition.Y > screenHeight)
+            {
+                misses++;
+
+                briefsPosition.X =
+                    Raylib.GetRandomValue(
+                        40,
+                        screenWidth -
+                        (int)(briefs.Width * briefsScale) -
+                        40
+                    );
+
+                briefsPosition.Y = -100;
+            }
+
+
+            // ========================================================
             // DRAW
-            // ========================================
+            // ============================================================
 
-            Console.SetCursorPosition(0, 0);
+            Raylib.BeginDrawing();
 
-            Console.WriteLine("UNDERWEAR CATCHER");
-            Console.WriteLine(
-                $"Score: {score}     Misses: {misses}"
-            );
-            Console.WriteLine();
-
-            for (int y = 0; y < height; y++)
-            {
-                char[] line =
-                    new string(' ', width).ToCharArray();
-
-                // ====================================
-                // DRAW FALLING BRIEFS
-                // ====================================
-
-                if (y == underwearY)
-                {
-                    DrawString(
-                        line,
-                        underwearX,
-                        "|-----|"
-                    );
-                }
-
-                if (y == underwearY + 1)
-                {
-                    DrawString(
-                        line,
-                        underwearX,
-                        @" \   / "
-                    );
-                }
-
-                if (y == underwearY + 2)
-                {
-                    DrawString(
-                        line,
-                        underwearX,
-                        @"  \_/  "
-                    );
-                }
-
-                // ====================================
-                // DRAW CATCHER
-                // ====================================
-
-                if (y == height - 2)
-                {
-                    DrawString(
-                        line,
-                        playerX,
-                        "[=====]"
-                    );
-                }
-
-                Console.WriteLine(line);
-            }
-
-            Console.WriteLine();
-
-            Console.WriteLine(
-                "LEFT/RIGHT - Move     ESC - Quit"
+            Raylib.ClearBackground(
+                new Color(18, 18, 26, 255)
             );
 
-            // Roughly 10 updates per second
-            Thread.Sleep(100);
-        }
-    }
 
-    // ================================================
-    // DRAW STRING HELPER
-    // ================================================
+            // ========================================================
+            // TITLE
+            // ============================================================
 
-    static void DrawString(
-        char[] line,
-        int x,
-        string text
-    )
-    {
-        for (int i = 0; i < text.Length; i++)
-        {
-            int position = x + i;
+            Raylib.DrawText(
+                "UNDERWEAR CATCHER",
+                220,
+                25,
+                32,
+                Color.SkyBlue
+            );
 
-            if (position >= 0 &&
-                position < line.Length)
+
+            // ========================================================
+            // SCORE
+            // ============================================================
+
+            Raylib.DrawText(
+                $"SCORE: {score}",
+                30,
+                75,
+                22,
+                Color.White
+            );
+
+
+            // ========================================================
+            // MISSES
+            // ============================================================
+
+            Raylib.DrawText(
+                $"MISSES: {misses}",
+                640,
+                75,
+                22,
+                Color.White
+            );
+
+
+            // ========================================================
+            // FALLING BRIEFS
+            // ============================================================
+
+            Raylib.DrawTextureEx(
+                briefs,
+                briefsPosition,
+                0.0f,
+                briefsScale,
+                Color.White
+            );
+
+
+            // ========================================================
+            // PLAYER
+            // ============================================================
+
+            if (!wearingBriefs)
             {
-                line[position] = text[i];
+                // BEFORE FIRST CATCH
+
+                Raylib.DrawTextureEx(
+                    catcherNaked,
+                    catcherPosition,
+                    0.0f,
+                    catcherScale,
+                    Color.White
+                );
             }
+            else
+            {
+                // AFTER FIRST CATCH
+                // This becomes permanent.
+
+                Raylib.DrawTextureEx(
+                    catcherCaught,
+                    catcherPosition,
+                    0.0f,
+                    catcherScale,
+                    Color.White
+                );
+            }
+
+
+            // ========================================================
+            // FIRST-CATCH INSTRUCTION
+            // ============================================================
+
+            if (!wearingBriefs)
+            {
+                Raylib.DrawText(
+                    "CATCH YOUR FIRST PAIR!",
+                    275,
+                    120,
+                    20,
+                    Color.Pink
+                );
+            }
+            else
+            {
+                Raylib.DrawText(
+                    "KEEP CATCHING!",
+                    320,
+                    120,
+                    20,
+                    Color.SkyBlue
+                );
+            }
+
+
+            // ========================================================
+            // CONTROLS
+            // ============================================================
+
+            Raylib.DrawText(
+                "A/D OR ARROWS - MOVE",
+                275,
+                565,
+                18,
+                Color.Gray
+            );
+
+
+            Raylib.EndDrawing();
         }
+
+
+        // ============================================================
+        // CLEANUP
+        // ============================================================
+
+        Raylib.UnloadTexture(catcherNaked);
+        Raylib.UnloadTexture(catcherCaught);
+        Raylib.UnloadTexture(briefs);
+
+        Raylib.CloseWindow();
     }
 }
