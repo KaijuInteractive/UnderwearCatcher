@@ -1,4 +1,5 @@
 ﻿using Raylib_cs;
+using System;
 using System.Numerics;
 
 class Program
@@ -60,7 +61,7 @@ class Program
         // ============================================================
 
         const float catcherScale = 3.0f;
-        const float briefsScale = 3.0f;
+        const float briefsScale = 2.0f;
 
 
         // ============================================================
@@ -76,7 +77,7 @@ class Program
             35
         );
 
-        float catcherSpeed = 500.0f;
+        const float catcherSpeed = 500.0f;
 
         bool wearingBriefs = false;
 
@@ -86,11 +87,31 @@ class Program
         // ============================================================
 
         Vector2 briefsPosition = new Vector2(
-            Raylib.GetRandomValue(40, 700),
+            Raylib.GetRandomValue(
+                40,
+                screenWidth -
+                (int)(briefs.Width * briefsScale) -
+                40
+            ),
             -100
         );
 
-        float briefsSpeed = 180.0f;
+
+        // ============================================================
+        // DIFFICULTY
+        // ============================================================
+
+        float gameTime = 0.0f;
+
+        const float startingBriefsSpeed = 180.0f;
+
+        // Controls how quickly the exponential curve grows.
+        const float accelerationRate = 0.018f;
+
+        // Eventually the underwear must obey SOME laws of physics.
+        const float maxBriefsSpeed = 900.0f;
+
+        float briefsSpeed = startingBriefsSpeed;
 
 
         // ============================================================
@@ -111,19 +132,46 @@ class Program
 
 
             // ========================================================
+            // TIMER
+            // ========================================================
+
+            gameTime += deltaTime;
+
+
+            // ========================================================
+            // EXPONENTIAL DIFFICULTY
+            // ========================================================
+
+            briefsSpeed =
+                startingBriefsSpeed *
+                MathF.Pow(
+                    1.0f + accelerationRate,
+                    gameTime
+                );
+
+            briefsSpeed =
+                MathF.Min(
+                    briefsSpeed,
+                    maxBriefsSpeed
+                );
+
+
+            // ========================================================
             // PLAYER MOVEMENT
             // ========================================================
 
             if (Raylib.IsKeyDown(KeyboardKey.Left) ||
                 Raylib.IsKeyDown(KeyboardKey.A))
             {
-                catcherPosition.X -= catcherSpeed * deltaTime;
+                catcherPosition.X -=
+                    catcherSpeed * deltaTime;
             }
 
             if (Raylib.IsKeyDown(KeyboardKey.Right) ||
                 Raylib.IsKeyDown(KeyboardKey.D))
             {
-                catcherPosition.X += catcherSpeed * deltaTime;
+                catcherPosition.X +=
+                    catcherSpeed * deltaTime;
             }
 
 
@@ -156,7 +204,7 @@ class Program
 
             // ========================================================
             // COLLISION RECTANGLES
-            // ============================================================
+            // ========================================================
 
             Rectangle catcherRectangle =
                 new Rectangle(
@@ -177,7 +225,7 @@ class Program
 
             // ========================================================
             // CATCH!
-            // ============================================================
+            // ========================================================
 
             if (Raylib.CheckCollisionRecs(
                 catcherRectangle,
@@ -185,9 +233,10 @@ class Program
             {
                 score++;
 
-                // --------------------------------------------
+
+                // ----------------------------------------------------
                 // FIRST CATCH
-                // --------------------------------------------
+                // ----------------------------------------------------
 
                 if (!wearingBriefs)
                 {
@@ -195,9 +244,9 @@ class Program
                 }
 
 
-                // --------------------------------------------
+                // ----------------------------------------------------
                 // RESET FALLING BRIEFS
-                // --------------------------------------------
+                // ----------------------------------------------------
 
                 briefsPosition.X =
                     Raylib.GetRandomValue(
@@ -208,19 +257,12 @@ class Program
                     );
 
                 briefsPosition.Y = -100;
-
-
-                // --------------------------------------------
-                // SPEED UP SLIGHTLY
-                // --------------------------------------------
-
-                briefsSpeed += 8.0f;
             }
 
 
             // ========================================================
             // MISS
-            // ============================================================
+            // ========================================================
 
             if (briefsPosition.Y > screenHeight)
             {
@@ -239,8 +281,20 @@ class Program
 
 
             // ========================================================
+            // DIFFICULTY DISPLAY
+            // ========================================================
+
+            int speedPercent =
+                (int)(
+                    briefsSpeed /
+                    startingBriefsSpeed *
+                    100.0f
+                );
+
+
+            // ========================================================
             // DRAW
-            // ============================================================
+            // ========================================================
 
             Raylib.BeginDrawing();
 
@@ -251,7 +305,7 @@ class Program
 
             // ========================================================
             // TITLE
-            // ============================================================
+            // ========================================================
 
             Raylib.DrawText(
                 "UNDERWEAR CATCHER",
@@ -264,7 +318,7 @@ class Program
 
             // ========================================================
             // SCORE
-            // ============================================================
+            // ========================================================
 
             Raylib.DrawText(
                 $"SCORE: {score}",
@@ -276,8 +330,30 @@ class Program
 
 
             // ========================================================
+            // SPEED
+            // ========================================================
+
+            string speedText =
+                $"SPEED: {speedPercent}%";
+
+            int speedTextWidth =
+                Raylib.MeasureText(
+                    speedText,
+                    20
+                );
+
+            Raylib.DrawText(
+                speedText,
+                (screenWidth - speedTextWidth) / 2,
+                77,
+                20,
+                Color.Yellow
+            );
+
+
+            // ========================================================
             // MISSES
-            // ============================================================
+            // ========================================================
 
             Raylib.DrawText(
                 $"MISSES: {misses}",
@@ -290,7 +366,7 @@ class Program
 
             // ========================================================
             // FALLING BRIEFS
-            // ============================================================
+            // ========================================================
 
             Raylib.DrawTextureEx(
                 briefs,
@@ -303,7 +379,7 @@ class Program
 
             // ========================================================
             // PLAYER
-            // ============================================================
+            // ========================================================
 
             if (!wearingBriefs)
             {
@@ -320,7 +396,7 @@ class Program
             else
             {
                 // AFTER FIRST CATCH
-                // This becomes permanent.
+                // The briefs stay on permanently.
 
                 Raylib.DrawTextureEx(
                     catcherCaught,
@@ -333,8 +409,8 @@ class Program
 
 
             // ========================================================
-            // FIRST-CATCH INSTRUCTION
-            // ============================================================
+            // INSTRUCTION
+            // ========================================================
 
             if (!wearingBriefs)
             {
@@ -360,7 +436,7 @@ class Program
 
             // ========================================================
             // CONTROLS
-            // ============================================================
+            // ========================================================
 
             Raylib.DrawText(
                 "A/D OR ARROWS - MOVE",
