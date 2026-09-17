@@ -104,11 +104,7 @@ class Program
         float gameTime = 0.0f;
 
         const float startingBriefsSpeed = 180.0f;
-
-        // Controls how quickly the exponential curve grows.
         const float accelerationRate = 0.018f;
-
-        // Eventually the underwear must obey SOME laws of physics.
         const float maxBriefsSpeed = 900.0f;
 
         float briefsSpeed = startingBriefsSpeed;
@@ -121,6 +117,10 @@ class Program
         int score = 0;
         int misses = 0;
 
+        const int maxMisses = 3;
+
+        bool gameOver = false;
+
 
         // ============================================================
         // GAME LOOP
@@ -132,156 +132,231 @@ class Program
 
 
             // ========================================================
-            // TIMER
-            // ========================================================
+            // ACTIVE GAME
+            // ============================================================
 
-            gameTime += deltaTime;
-
-
-            // ========================================================
-            // EXPONENTIAL DIFFICULTY
-            // ========================================================
-
-            briefsSpeed =
-                startingBriefsSpeed *
-                MathF.Pow(
-                    1.0f + accelerationRate,
-                    gameTime
-                );
-
-            briefsSpeed =
-                MathF.Min(
-                    briefsSpeed,
-                    maxBriefsSpeed
-                );
-
-
-            // ========================================================
-            // PLAYER MOVEMENT
-            // ========================================================
-
-            if (Raylib.IsKeyDown(KeyboardKey.Left) ||
-                Raylib.IsKeyDown(KeyboardKey.A))
+            if (!gameOver)
             {
-                catcherPosition.X -=
-                    catcherSpeed * deltaTime;
-            }
+                // ====================================================
+                // TIMER
+                // ====================================================
 
-            if (Raylib.IsKeyDown(KeyboardKey.Right) ||
-                Raylib.IsKeyDown(KeyboardKey.D))
-            {
-                catcherPosition.X +=
-                    catcherSpeed * deltaTime;
-            }
+                gameTime += deltaTime;
 
 
-            // ========================================================
-            // PLAYER SCREEN BOUNDARIES
-            // ========================================================
+                // ====================================================
+                // EXPONENTIAL DIFFICULTY
+                // ====================================================
 
-            float catcherWidth =
-                catcherNaked.Width * catcherScale;
+                briefsSpeed =
+                    startingBriefsSpeed *
+                    MathF.Pow(
+                        1.0f + accelerationRate,
+                        gameTime
+                    );
 
-            if (catcherPosition.X < 0)
-            {
-                catcherPosition.X = 0;
-            }
-
-            if (catcherPosition.X + catcherWidth > screenWidth)
-            {
-                catcherPosition.X =
-                    screenWidth - catcherWidth;
-            }
-
-
-            // ========================================================
-            // MOVE FALLING BRIEFS
-            // ========================================================
-
-            briefsPosition.Y +=
-                briefsSpeed * deltaTime;
+                briefsSpeed =
+                    MathF.Min(
+                        briefsSpeed,
+                        maxBriefsSpeed
+                    );
 
 
-            // ========================================================
-            // COLLISION RECTANGLES
-            // ========================================================
+                // ====================================================
+                // PLAYER MOVEMENT
+                // ====================================================
 
-            Rectangle catcherRectangle =
-                new Rectangle(
-                    catcherPosition.X,
-                    catcherPosition.Y,
-                    catcherNaked.Width * catcherScale,
-                    catcherNaked.Height * catcherScale
-                );
-
-            Rectangle briefsRectangle =
-                new Rectangle(
-                    briefsPosition.X,
-                    briefsPosition.Y,
-                    briefs.Width * briefsScale,
-                    briefs.Height * briefsScale
-                );
-
-
-            // ========================================================
-            // CATCH!
-            // ========================================================
-
-            if (Raylib.CheckCollisionRecs(
-                catcherRectangle,
-                briefsRectangle))
-            {
-                score++;
-
-
-                // ----------------------------------------------------
-                // FIRST CATCH
-                // ----------------------------------------------------
-
-                if (!wearingBriefs)
+                if (Raylib.IsKeyDown(KeyboardKey.Left) ||
+                    Raylib.IsKeyDown(KeyboardKey.A))
                 {
-                    wearingBriefs = true;
+                    catcherPosition.X -=
+                        catcherSpeed * deltaTime;
+                }
+
+                if (Raylib.IsKeyDown(KeyboardKey.Right) ||
+                    Raylib.IsKeyDown(KeyboardKey.D))
+                {
+                    catcherPosition.X +=
+                        catcherSpeed * deltaTime;
                 }
 
 
-                // ----------------------------------------------------
-                // RESET FALLING BRIEFS
-                // ----------------------------------------------------
+                // ====================================================
+                // PLAYER SCREEN BOUNDARIES
+                // ====================================================
 
-                briefsPosition.X =
-                    Raylib.GetRandomValue(
-                        40,
-                        screenWidth -
-                        (int)(briefs.Width * briefsScale) -
-                        40
+                float catcherWidth =
+                    catcherNaked.Width * catcherScale;
+
+                if (catcherPosition.X < 0)
+                {
+                    catcherPosition.X = 0;
+                }
+
+                if (catcherPosition.X + catcherWidth > screenWidth)
+                {
+                    catcherPosition.X =
+                        screenWidth - catcherWidth;
+                }
+
+
+                // ====================================================
+                // MOVE FALLING BRIEFS
+                // ====================================================
+
+                briefsPosition.Y +=
+                    briefsSpeed * deltaTime;
+
+
+                // ====================================================
+                // COLLISION RECTANGLES
+                // ====================================================
+
+                Rectangle catcherRectangle =
+                    new Rectangle(
+                        catcherPosition.X,
+                        catcherPosition.Y,
+                        catcherNaked.Width * catcherScale,
+                        catcherNaked.Height * catcherScale
                     );
 
-                briefsPosition.Y = -100;
+                Rectangle briefsRectangle =
+                    new Rectangle(
+                        briefsPosition.X,
+                        briefsPosition.Y,
+                        briefs.Width * briefsScale,
+                        briefs.Height * briefsScale
+                    );
+
+
+                // ====================================================
+                // CATCH!
+                // ====================================================
+
+                if (Raylib.CheckCollisionRecs(
+                    catcherRectangle,
+                    briefsRectangle))
+                {
+                    score++;
+
+
+                    // -----------------------------------------------
+                    // FIRST CATCH
+                    // -----------------------------------------------
+
+                    if (!wearingBriefs)
+                    {
+                        wearingBriefs = true;
+                    }
+
+
+                    // -----------------------------------------------
+                    // RESET FALLING BRIEFS
+                    // -----------------------------------------------
+
+                    briefsPosition.X =
+                        Raylib.GetRandomValue(
+                            40,
+                            screenWidth -
+                            (int)(briefs.Width * briefsScale) -
+                            40
+                        );
+
+                    briefsPosition.Y = -100;
+                }
+
+
+                // ====================================================
+                // MISS
+                // ====================================================
+
+                if (briefsPosition.Y > screenHeight)
+                {
+                    misses++;
+
+
+                    // -----------------------------------------------
+                    // GAME OVER?
+                    // -----------------------------------------------
+
+                    if (misses >= maxMisses)
+                    {
+                        gameOver = true;
+                    }
+                    else
+                    {
+                        briefsPosition.X =
+                            Raylib.GetRandomValue(
+                                40,
+                                screenWidth -
+                                (int)(briefs.Width * briefsScale) -
+                                40
+                            );
+
+                        briefsPosition.Y = -100;
+                    }
+                }
             }
 
 
             // ========================================================
-            // MISS
+            // GAME OVER INPUT
             // ========================================================
 
-            if (briefsPosition.Y > screenHeight)
+            if (gameOver)
             {
-                misses++;
+                if (Raylib.IsKeyPressed(KeyboardKey.R))
+                {
+                    // -----------------------------------------------
+                    // RESET GAME DATA
+                    // -----------------------------------------------
 
-                briefsPosition.X =
-                    Raylib.GetRandomValue(
-                        40,
-                        screenWidth -
-                        (int)(briefs.Width * briefsScale) -
-                        40
+                    score = 0;
+                    misses = 0;
+
+                    gameTime = 0.0f;
+
+                    briefsSpeed =
+                        startingBriefsSpeed;
+
+                    wearingBriefs = false;
+
+                    gameOver = false;
+
+
+                    // -----------------------------------------------
+                    // RESET PLAYER
+                    // -----------------------------------------------
+
+                    catcherPosition = new Vector2(
+                        screenWidth / 2.0f -
+                        (catcherNaked.Width * catcherScale) / 2.0f,
+
+                        screenHeight -
+                        (catcherNaked.Height * catcherScale) -
+                        35
                     );
 
-                briefsPosition.Y = -100;
+
+                    // -----------------------------------------------
+                    // RESET FALLING BRIEFS
+                    // -----------------------------------------------
+
+                    briefsPosition.X =
+                        Raylib.GetRandomValue(
+                            40,
+                            screenWidth -
+                            (int)(briefs.Width * briefsScale) -
+                            40
+                        );
+
+                    briefsPosition.Y = -100;
+                }
             }
 
 
             // ========================================================
-            // DIFFICULTY DISPLAY
+            // SPEED DISPLAY
             // ========================================================
 
             int speedPercent =
@@ -356,8 +431,8 @@ class Program
             // ========================================================
 
             Raylib.DrawText(
-                $"MISSES: {misses}",
-                640,
+                $"MISSES: {misses}/{maxMisses}",
+                620,
                 75,
                 22,
                 Color.White
@@ -365,86 +440,179 @@ class Program
 
 
             // ========================================================
-            // FALLING BRIEFS
+            // ACTIVE GAME DRAWING
             // ========================================================
 
-            Raylib.DrawTextureEx(
-                briefs,
-                briefsPosition,
-                0.0f,
-                briefsScale,
-                Color.White
-            );
-
-
-            // ========================================================
-            // PLAYER
-            // ========================================================
-
-            if (!wearingBriefs)
+            if (!gameOver)
             {
-                // BEFORE FIRST CATCH
+                // ====================================================
+                // FALLING BRIEFS
+                // ====================================================
 
                 Raylib.DrawTextureEx(
-                    catcherNaked,
-                    catcherPosition,
+                    briefs,
+                    briefsPosition,
                     0.0f,
-                    catcherScale,
+                    briefsScale,
                     Color.White
                 );
-            }
-            else
-            {
-                // AFTER FIRST CATCH
-                // The briefs stay on permanently.
-
-                Raylib.DrawTextureEx(
-                    catcherCaught,
-                    catcherPosition,
-                    0.0f,
-                    catcherScale,
-                    Color.White
-                );
-            }
 
 
-            // ========================================================
-            // INSTRUCTION
-            // ========================================================
+                // ====================================================
+                // PLAYER
+                // ====================================================
 
-            if (!wearingBriefs)
-            {
+                if (!wearingBriefs)
+                {
+                    Raylib.DrawTextureEx(
+                        catcherNaked,
+                        catcherPosition,
+                        0.0f,
+                        catcherScale,
+                        Color.White
+                    );
+                }
+                else
+                {
+                    Raylib.DrawTextureEx(
+                        catcherCaught,
+                        catcherPosition,
+                        0.0f,
+                        catcherScale,
+                        Color.White
+                    );
+                }
+
+
+                // ====================================================
+                // INSTRUCTION
+                // ====================================================
+
+                if (!wearingBriefs)
+                {
+                    Raylib.DrawText(
+                        "CATCH YOUR FIRST PAIR!",
+                        275,
+                        120,
+                        20,
+                        Color.Pink
+                    );
+                }
+                else
+                {
+                    Raylib.DrawText(
+                        "KEEP CATCHING!",
+                        320,
+                        120,
+                        20,
+                        Color.SkyBlue
+                    );
+                }
+
+
+                // ====================================================
+                // CONTROLS
+                // ====================================================
+
                 Raylib.DrawText(
-                    "CATCH YOUR FIRST PAIR!",
+                    "A/D OR ARROWS - MOVE",
                     275,
-                    120,
-                    20,
+                    565,
+                    18,
+                    Color.Gray
+                );
+            }
+
+
+            // ========================================================
+            // GAME OVER SCREEN
+            // ========================================================
+
+            if (gameOver)
+            {
+                string gameOverText =
+                    "GAME OVER";
+
+                int gameOverWidth =
+                    Raylib.MeasureText(
+                        gameOverText,
+                        50
+                    );
+
+                Raylib.DrawText(
+                    gameOverText,
+                    (screenWidth - gameOverWidth) / 2,
+                    210,
+                    50,
                     Color.Pink
                 );
-            }
-            else
-            {
+
+
+                // ----------------------------------------------------
+                // FINAL SCORE
+                // ----------------------------------------------------
+
+                string finalScoreText =
+                    $"FINAL SCORE: {score}";
+
+                int finalScoreWidth =
+                    Raylib.MeasureText(
+                        finalScoreText,
+                        30
+                    );
+
                 Raylib.DrawText(
-                    "KEEP CATCHING!",
-                    320,
-                    120,
+                    finalScoreText,
+                    (screenWidth - finalScoreWidth) / 2,
+                    285,
+                    30,
+                    Color.White
+                );
+
+
+                // ----------------------------------------------------
+                // FINAL SPEED
+                // ----------------------------------------------------
+
+                string finalSpeedText =
+                    $"YOU REACHED {speedPercent}% SPEED";
+
+                int finalSpeedWidth =
+                    Raylib.MeasureText(
+                        finalSpeedText,
+                        20
+                    );
+
+                Raylib.DrawText(
+                    finalSpeedText,
+                    (screenWidth - finalSpeedWidth) / 2,
+                    335,
                     20,
+                    Color.Yellow
+                );
+
+
+                // ----------------------------------------------------
+                // RESTART
+                // ----------------------------------------------------
+
+                string restartText =
+                    "PRESS R TO TRY AGAIN";
+
+                int restartWidth =
+                    Raylib.MeasureText(
+                        restartText,
+                        22
+                    );
+
+                Raylib.DrawText(
+                    restartText,
+                    (screenWidth - restartWidth) / 2,
+                    410,
+                    22,
                     Color.SkyBlue
                 );
             }
-
-
-            // ========================================================
-            // CONTROLS
-            // ========================================================
-
-            Raylib.DrawText(
-                "A/D OR ARROWS - MOVE",
-                275,
-                565,
-                18,
-                Color.Gray
-            );
 
 
             Raylib.EndDrawing();
