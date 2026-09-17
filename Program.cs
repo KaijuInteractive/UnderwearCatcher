@@ -444,12 +444,12 @@ class Program
                 (byte)(120 + pulse * 135);
 
             Color pulseColor =
-                new Color(
-                    255,
-                    255,
-                    255,
-                    pulseAlpha
-                );
+     new Color(
+         (byte)255,
+         (byte)255,
+         (byte)255,
+         pulseAlpha
+     );
 
 
             // ========================================================
