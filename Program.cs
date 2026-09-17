@@ -245,7 +245,7 @@ class Program
             Raylib.BeginDrawing();
 
             Raylib.ClearBackground(
-                new Color(18, 18, 26, 255)
+                new Color(20, 55, 60, 255)
             );
 
 
