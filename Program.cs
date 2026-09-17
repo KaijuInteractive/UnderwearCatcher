@@ -418,54 +418,66 @@ class Program
                 // STREWN BRIEFS
                 // ----------------------------------------------------
 
+                // ----------------------------------------------------
+                // STREWN BRIEFS
+                // Deliberately messy and asymmetrical.
+                // ----------------------------------------------------
+
                 Raylib.DrawTextureEx(
                     briefs,
-                    new Vector2(70, 80),
-                    -18.0f,
-                    1.5f,
+                    new Vector2(55, 105),
+                    -27.0f,
+                    1.35f,
                     Color.White
                 );
 
                 Raylib.DrawTextureEx(
                     briefs,
-                    new Vector2(625, 75),
-                    20.0f,
-                    1.4f,
+                    new Vector2(665, 155),
+                    13.0f,
+                    0.85f,
                     Color.White
                 );
 
                 Raylib.DrawTextureEx(
                     briefs,
-                    new Vector2(100, 405),
-                    15.0f,
-                    1.2f,
+                    new Vector2(135, 315),
+                    31.0f,
+                    0.75f,
                     Color.White
                 );
 
                 Raylib.DrawTextureEx(
                     briefs,
-                    new Vector2(640, 410),
-                    -15.0f,
-                    1.3f,
+                    new Vector2(610, 370),
+                    -11.0f,
+                    1.25f,
                     Color.White
                 );
 
                 Raylib.DrawTextureEx(
                     briefs,
-                    new Vector2(185, 230),
-                    -28.0f,
-                    0.9f,
+                    new Vector2(245, 470),
+                    -38.0f,
+                    0.95f,
                     Color.White
                 );
 
                 Raylib.DrawTextureEx(
                     briefs,
-                    new Vector2(565, 245),
-                    25.0f,
-                    0.9f,
+                    new Vector2(705, 500),
+                    24.0f,
+                    0.65f,
                     Color.White
                 );
 
+                Raylib.DrawTextureEx(
+                    briefs,
+                    new Vector2(525, 105),
+                    42.0f,
+                    0.55f,
+                    Color.White
+                );
 
                 // ----------------------------------------------------
                 // TITLE
