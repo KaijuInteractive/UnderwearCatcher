@@ -71,6 +71,7 @@ class Program
 
         bool titleScreen = true;
         bool gameOver = false;
+        bool resetHighScoreConfirm = false;
 
 
         // ============================================================
@@ -165,8 +166,31 @@ class Program
 
             if (titleScreen)
             {
+                // DELETE = reset high score
+                if (Raylib.IsKeyPressed(KeyboardKey.Delete))
+                {
+                    if (!resetHighScoreConfirm)
+                    {
+                        resetHighScoreConfirm = true;
+                    }
+                    else
+                    {
+                        highScore = 0;
+
+                        File.WriteAllText(
+                            saveFile,
+                            highScore.ToString()
+                        );
+
+                        resetHighScoreConfirm = false;
+                    }
+                }
+
+                // ENTER = start game
                 if (Raylib.IsKeyPressed(KeyboardKey.Enter))
                 {
+                    resetHighScoreConfirm = false;
+
                     titleScreen = false;
                     gameOver = false;
 
@@ -198,7 +222,6 @@ class Program
                     briefsPosition.Y = -100;
                 }
             }
-
 
             // ========================================================
             // ACTIVE GAME
@@ -656,7 +679,28 @@ class Program
                         18
                     );
 
-                Raylib.DrawText(
+                    string resetText =
+    resetHighScoreConfirm
+    ? "PRESS DELETE AGAIN TO RESET"
+    : "DELETE - RESET HIGH SCORE";
+
+                    int resetWidth =
+                        Raylib.MeasureText(
+                            resetText,
+                            16
+                        );
+
+                    Raylib.DrawText(
+                        resetText,
+                        (screenWidth - resetWidth) / 2,
+                        530,
+                        16,
+                        resetHighScoreConfirm
+                            ? Color.Pink
+                            : Color.Gray
+                    );
+
+                    Raylib.DrawText(
                     ruleText,
                     (screenWidth - ruleWidth) / 2,
                     495,
