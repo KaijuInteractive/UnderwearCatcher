@@ -17,7 +17,7 @@ class Program
         Raylib.InitWindow(
             screenWidth,
             screenHeight,
-            "Underwear Catcher"
+            "Underwear Catcher - Kaiju Interactive"
         );
 
         Raylib.InitAudioDevice();
@@ -776,6 +776,28 @@ class Program
                     495,
                     18,
                     Color.Gray
+                );
+
+
+                // ----------------------------------------------------
+                // KAIJU INTERACTIVE BRANDING
+                // ----------------------------------------------------
+
+                string studioText =
+                    "A KAIJU INTERACTIVE GAME - 2026";
+
+                int studioWidth =
+                    Raylib.MeasureText(
+                        studioText,
+                        14
+                    );
+
+                Raylib.DrawText(
+                    studioText,
+                    (screenWidth - studioWidth) / 2,
+                    570,
+                    14,
+                    Color.SkyBlue
                 );
             }
 
