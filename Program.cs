@@ -20,6 +20,8 @@ class Program
             "Underwear Catcher"
         );
 
+        Raylib.InitAudioDevice();
+
         Raylib.SetTargetFPS(60);
 
 
@@ -35,6 +37,20 @@ class Program
 
         Texture2D briefs =
             Raylib.LoadTexture("Assets/Briefs_Catch.png");
+
+
+        // ============================================================
+        // LOAD MUSIC
+        // ============================================================
+
+        Music theme =
+            Raylib.LoadMusicStream("Assets/Theme.wav");
+
+        // Title-screen volume.
+        Raylib.SetMusicVolume(theme, 0.65f);
+
+        // Start immediately.
+        Raylib.PlayMusicStream(theme);
 
 
         // ============================================================
@@ -82,7 +98,6 @@ class Program
 
         int highScore = 0;
 
-        // Try to load an existing high score.
         if (File.Exists(saveFile))
         {
             string savedText =
@@ -161,6 +176,14 @@ class Program
 
 
             // ========================================================
+            // MUSIC STREAM
+            // ========================================================
+
+            // Streaming music MUST be updated every frame.
+            Raylib.UpdateMusicStream(theme);
+
+
+            // ========================================================
             // TITLE SCREEN INPUT
             // ========================================================
 
@@ -186,13 +209,26 @@ class Program
                     }
                 }
 
+
                 // ENTER = start game
                 if (Raylib.IsKeyPressed(KeyboardKey.Enter))
                 {
+                    // =================================================
+                    // START SOUND
+                    // Quick ascending arcade chirp
+                    // =================================================
+
+                    Console.Beep(700, 30);
+                    Console.Beep(1000, 30);
+
+
                     resetHighScoreConfirm = false;
 
                     titleScreen = false;
                     gameOver = false;
+
+                    // Lower theme for gameplay.
+                    Raylib.SetMusicVolume(theme, 0.22f);
 
                     score = 0;
                     misses = 0;
@@ -222,6 +258,7 @@ class Program
                     briefsPosition.Y = -100;
                 }
             }
+
 
             // ========================================================
             // ACTIVE GAME
@@ -329,6 +366,13 @@ class Program
                     catcherRectangle,
                     briefsRectangle))
                 {
+                    // =================================================
+                    // CATCH SOUND
+                    // =================================================
+
+                    Console.Beep(1200, 25);
+
+
                     score++;
 
 
@@ -374,10 +418,28 @@ class Program
 
                     if (misses >= maxMisses)
                     {
+                        // =============================================
+                        // GAME OVER SOUND
+                        // =============================================
+
+                        Console.Beep(500, 70);
+                        Console.Beep(350, 100);
+
+
                         gameOver = true;
+
+                        // Keep theme soft on Game Over.
+                        Raylib.SetMusicVolume(theme, 0.22f);
                     }
                     else
                     {
+                        // =============================================
+                        // MISS SOUND
+                        // =============================================
+
+                        Console.Beep(350, 60);
+
+
                         briefsPosition.X =
                             Raylib.GetRandomValue(
                                 40,
@@ -401,6 +463,11 @@ class Program
                 // R = restart immediately.
                 if (Raylib.IsKeyPressed(KeyboardKey.R))
                 {
+                    // Little restart chirp.
+                    Console.Beep(600, 25);
+                    Console.Beep(900, 25);
+
+
                     score = 0;
                     misses = 0;
 
@@ -409,6 +476,9 @@ class Program
 
                     wearingBriefs = false;
                     gameOver = false;
+
+                    // Gameplay volume.
+                    Raylib.SetMusicVolume(theme, 0.22f);
 
                     catcherPosition = new Vector2(
                         screenWidth / 2.0f -
@@ -436,6 +506,9 @@ class Program
                 {
                     gameOver = false;
                     titleScreen = true;
+
+                    // Bring music back up for title.
+                    Raylib.SetMusicVolume(theme, 0.65f);
                 }
             }
 
@@ -456,23 +529,21 @@ class Program
             // TITLE PULSE
             // ========================================================
 
-            // Produces a smooth value between 0 and 1.
             float pulse =
                 (MathF.Sin(
                     (float)Raylib.GetTime() * 3.0f
                 ) + 1.0f) / 2.0f;
 
-            // Keep it visible even at the dimmest point.
             byte pulseAlpha =
                 (byte)(120 + pulse * 135);
 
             Color pulseColor =
-     new Color(
-         (byte)255,
-         (byte)255,
-         (byte)255,
-         pulseAlpha
-     );
+                new Color(
+                    (byte)255,
+                    (byte)255,
+                    (byte)255,
+                    pulseAlpha
+                );
 
 
             // ========================================================
@@ -494,7 +565,6 @@ class Program
             {
                 // ----------------------------------------------------
                 // STREWN BRIEFS
-                // Deliberately messy and asymmetrical.
                 // ----------------------------------------------------
 
                 Raylib.DrawTextureEx(
@@ -679,28 +749,28 @@ class Program
                         18
                     );
 
-                    string resetText =
-    resetHighScoreConfirm
-    ? "PRESS DELETE AGAIN TO RESET"
-    : "DELETE - RESET HIGH SCORE";
+                string resetText =
+                    resetHighScoreConfirm
+                    ? "PRESS DELETE AGAIN TO RESET"
+                    : "DELETE - RESET HIGH SCORE";
 
-                    int resetWidth =
-                        Raylib.MeasureText(
-                            resetText,
-                            16
-                        );
-
-                    Raylib.DrawText(
+                int resetWidth =
+                    Raylib.MeasureText(
                         resetText,
-                        (screenWidth - resetWidth) / 2,
-                        530,
-                        16,
-                        resetHighScoreConfirm
-                            ? Color.Pink
-                            : Color.Gray
+                        16
                     );
 
-                    Raylib.DrawText(
+                Raylib.DrawText(
+                    resetText,
+                    (screenWidth - resetWidth) / 2,
+                    530,
+                    16,
+                    resetHighScoreConfirm
+                        ? Color.Pink
+                        : Color.Gray
+                );
+
+                Raylib.DrawText(
                     ruleText,
                     (screenWidth - ruleWidth) / 2,
                     495,
@@ -1049,10 +1119,14 @@ class Program
         // CLEANUP
         // ============================================================
 
+        Raylib.StopMusicStream(theme);
+        Raylib.UnloadMusicStream(theme);
+
         Raylib.UnloadTexture(catcherNaked);
         Raylib.UnloadTexture(catcherCaught);
         Raylib.UnloadTexture(briefs);
 
+        Raylib.CloseAudioDevice();
         Raylib.CloseWindow();
     }
 }
