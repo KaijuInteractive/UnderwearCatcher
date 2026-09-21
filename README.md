@@ -4,6 +4,8 @@ Catch the undies. Don't let them hit the floor.
 
 **Underwear Catcher** is a fast-paced arcade game developed by Kaiju Interactive in C# using raylib. Catch falling underwear, survive increasingly frantic drops, and chase your high score before three misses end the run.
 
+![Underwear Catcher gameplay showing the escalating speed and underwear-catching mechanic](underwear-catcher-gameplay.png)
+
 ## 🎮 Features
 
 - Fast-paced arcade gameplay
