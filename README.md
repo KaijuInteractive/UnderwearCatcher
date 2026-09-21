@@ -9,7 +9,7 @@ Catch the undies. Don't let them hit the floor.
 ## 🎮 Features
 
 - Fast-paced arcade gameplay
-- Multiple falling underwear types
+- Custom pixel-art underwear sprites
 - Increasing difficulty as the game progresses
 - Three misses = game over
 - Score and persistent high score tracking
