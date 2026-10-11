@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Underwear Catcher local save data
+highscore.txt
+
+# Local game data
+highscore.txt
